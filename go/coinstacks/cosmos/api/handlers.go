@@ -261,6 +261,57 @@ func (h *Handler) GetTxHistory(pubkey string, cursor string, pageSize int) (api.
 	return txHistory, nil
 }
 
+func (h *Handler) GetTxHistory2(pubkey string, cursor string, pageSize int) (api.TxHistory, error) {
+	res, err := h.httpClient.GetTxHistory2(pubkey, cursor, pageSize)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get tx history")
+	}
+
+	txs := []Tx{}
+	for _, t := range res.Txs {
+		height, err := strconv.Atoi(*t.TendermintTx.Height)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		block, err := h.blockService.GetBlock(height)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get tx history")
+		}
+
+		tx := Tx{
+			BaseTx: api.BaseTx{
+				TxID:        *t.TendermintTx.Hash,
+				BlockHash:   &block.Hash,
+				BlockHeight: &block.Height,
+				Timestamp:   &block.Timestamp,
+			},
+			Confirmations: h.blockService.Latest.Height - height + 1,
+			Events:        cosmos.Events(t.TendermintTx.TxResult.Log),
+			Fee:           cosmos.Fee(t.SigningTx, *t.TendermintTx.Hash, "uatom"),
+			GasWanted:     t.TendermintTx.TxResult.GasWanted,
+			GasUsed:       t.TendermintTx.TxResult.GasUsed,
+			Index:         int(t.TendermintTx.GetIndex()),
+			Memo:          t.SigningTx.GetMemo(),
+			Messages:      cosmos.Messages(t.CosmosTx.GetMsgs()),
+		}
+
+		txs = append(txs, tx)
+	}
+
+	txHistory := TxHistory{
+		BaseTxHistory: api.BaseTxHistory{
+			Pagination: api.Pagination{
+				Cursor: res.Cursor,
+			},
+			Pubkey: pubkey,
+		},
+		Txs: txs,
+	}
+
+	return txHistory, nil
+}
+
 func (h *Handler) SendTx(rawTx string) (string, error) {
 	return h.httpClient.BroadcastTx(rawTx)
 }

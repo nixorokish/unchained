@@ -37,7 +37,7 @@ func main() {
 
 	conf := &Config{}
 	if *envPath == "" {
-		if err := config.LoadFromEnv(conf, "API_KEY", "GRPC_URL", "LCD_URL", "RPC_URL", "WS_URL"); err != nil {
+		if err := config.LoadFromEnv(conf, "API_KEY", "GRPC_URL", "LCD_URL", "RPC_URL", "WS_URL", "TX_URL"); err != nil {
 			logger.Panicf("failed to load config from env: %+v", err)
 		}
 	} else {

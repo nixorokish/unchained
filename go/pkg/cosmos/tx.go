@@ -53,6 +53,36 @@ func (c *HTTPClient) GetTxHistory(address string, cursor string, pageSize int) (
 	return txHistory, nil
 }
 
+func (c *HTTPClient) GetTxHistory2(address string, cursor string, pageSize int) (*TxHistory, error) {
+	history := &History{
+		ctx:        c.ctx,
+		cursor:     &Cursor{Page: 1},
+		pageSize:   pageSize,
+		tendermint: c.tendermint,
+		txSearch:   c.txSearch,
+		encoding:   c.encoding,
+	}
+
+	if cursor != "" {
+		if err := history.cursor.decode(cursor); err != nil {
+			return nil, errors.Wrapf(err, "failed to decode cursor: %s", cursor)
+		}
+	}
+
+	history.txs = &TxState{
+		hasMore: true,
+		page:    history.cursor.SendPage,
+		query:   fmt.Sprintf(`"message.sender='%s'"`, address),
+	}
+
+	txHistory, err := history.fetch2()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get tx history for address: %s", address)
+	}
+
+	return txHistory, nil
+}
+
 func (c *HTTPClient) BroadcastTx(rawTx string) (string, error) {
 	txBytes, err := base64.StdEncoding.DecodeString(rawTx)
 	if err != nil {

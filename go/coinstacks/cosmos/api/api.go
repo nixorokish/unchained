@@ -104,6 +104,7 @@ func New(httpClient *cosmos.HTTPClient, grpcClient *cosmos.GRPCClient, wsClient 
 	v1Account.Use(cosmos.ValidatePubkey)
 	v1Account.HandleFunc("/{pubkey}", a.Account).Methods("GET")
 	v1Account.HandleFunc("/{pubkey}/txs", a.TxHistory).Methods("GET")
+	v1Account.HandleFunc("/{pubkey}/txs2", a.TxHistory2).Methods("GET")
 
 	v1Gas := v1.PathPrefix("/gas").Subrouter()
 	v1Gas.HandleFunc("/estimate", a.EstimateGas).Methods("POST")
@@ -248,6 +249,58 @@ func (a *API) TxHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	txHistory, err := a.handler.GetTxHistory(pubkey, cursor, pageSize)
+	if err != nil {
+		api.HandleError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	api.HandleResponse(w, http.StatusOK, txHistory)
+}
+
+// swagger:route GET /api/v1/account/{pubkey}/txs2 v1 GetTxHistory2
+//
+// Get paginated transaction history.
+//
+// responses:
+//   200: TxHistory
+//   400: BadRequestError
+//   500: InternalServerError
+func (a *API) TxHistory2(w http.ResponseWriter, r *http.Request) {
+	// pubkey validated by ValidatePubkey middleware
+	pubkey := mux.Vars(r)["pubkey"]
+
+	cursor := r.URL.Query().Get("cursor")
+
+	pageSizeQ := r.URL.Query().Get("pageSize")
+	if pageSizeQ == "" {
+		pageSizeQ = "10"
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeQ)
+	if err != nil {
+		api.HandleError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if pageSize > MAX_PAGE_SIZE_TX_HISTORY {
+		api.HandleError(w, http.StatusBadRequest, fmt.Sprintf("page size max is %d", MAX_PAGE_SIZE_TX_HISTORY))
+		return
+	}
+
+	if pageSize == 0 {
+		api.HandleError(w, http.StatusBadRequest, "page size cannot be 0")
+		return
+	}
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+	logger.Info("TX HISTORY2")
+
+	txHistory, err := a.handler.GetTxHistory2(pubkey, cursor, pageSize)
 	if err != nil {
 		api.HandleError(w, http.StatusInternalServerError, err.Error())
 		return

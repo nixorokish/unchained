@@ -45,6 +45,7 @@ type Config struct {
 	LCDURL            string
 	RPCURL            string
 	WSURL             string
+	TXURL             string
 }
 
 // HTTPClient allows communicating over http
@@ -54,6 +55,7 @@ type HTTPClient struct {
 
 	cosmos     *resty.Client
 	tendermint *resty.Client
+	txSearch   *resty.Client
 }
 
 // NewHTTPClient configures and creates an HTTPClient
@@ -71,16 +73,23 @@ func NewHTTPClient(conf Config) (*HTTPClient, error) {
 		return nil, errors.Wrapf(err, "failed to parse RPCURL: %s", conf.RPCURL)
 	}
 
+	txURL, err := url.Parse(conf.TXURL)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse TXURL: %s", conf.TXCURL)
+	}
+
 	// untyped resty http clients
 	headers := map[string]string{"Accept": "application/json", "Authorization": conf.APIKey}
 	cosmos := resty.New().SetScheme(lcdURL.Scheme).SetBaseURL(lcdURL.Host).SetHeaders(headers)
 	tendermint := resty.New().SetScheme(rpcURL.Scheme).SetBaseURL(rpcURL.Host).SetHeaders(headers)
+	txSearch := resty.New().SetScheme(rpcURL.Scheme).SetBaseURL(rpcURL.Host).SetHeaders(headers)
 
 	c := &HTTPClient{
 		ctx:        context.Background(),
 		encoding:   conf.Encoding,
 		cosmos:     cosmos,
 		tendermint: tendermint,
+		txSearch:   txSearch,
 	}
 
 	return c, nil

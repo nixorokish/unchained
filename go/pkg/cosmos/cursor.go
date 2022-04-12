@@ -15,6 +15,7 @@ type Cursor struct {
 	SendTxID    string `json:"sendTxID"`
 	SendPage    int    `json:"sendPage"`
 	ReceivePage int    `json:"receivePage"`
+	Page        int    `json:"page"`
 }
 
 // encode Cursor struct as a base64 string

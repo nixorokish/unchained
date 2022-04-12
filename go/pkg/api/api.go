@@ -151,6 +151,17 @@ type PaginatedPubkeyParam struct {
 	PageSize int `json:"pageSize"`
 }
 
+// swagger:parameters GetTxHistory2
+type PaginatedPubkeyParam2 struct {
+	PubkeyParam
+	// Pagination cursor from previous response or empty string for first page fetch
+	// in: query
+	Cursor string `json:"cursor"`
+	// Page size (default 10)
+	// in: query
+	PageSize int `json:"pageSize"`
+}
+
 // swagger:parameters SendTx EstimateGas
 type TxParam struct {
 	// in:body
