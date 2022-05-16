@@ -89,10 +89,14 @@ func (h *Handler) StartWebsocket() error {
 }
 
 func (h *Handler) GetInfo() (api.Info, error) {
+
 	info := Info{
 		BaseInfo: api.BaseInfo{
 			Network: "mainnet",
 		},
+		TotalSupply:  "0",
+		BondedTokens: "0",
+		APR:          "0",
 	}
 
 	return info, nil

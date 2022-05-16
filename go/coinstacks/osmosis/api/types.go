@@ -10,6 +10,15 @@ import (
 type Info struct {
 	// swagger:allOf
 	api.BaseInfo
+	// required: true
+	// example: 291107634956378
+	TotalSupply string `json:"totalSupply"`
+	// required: true
+	// example: 186039736185555
+	BondedTokens string `json:"bondedTokens"`
+	// required: true
+	// example: 0.1541068456
+	APR string `json:"apr"`
 }
 
 // Contains info about account details for an address or xpub
